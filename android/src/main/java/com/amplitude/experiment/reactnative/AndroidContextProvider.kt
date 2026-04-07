@@ -257,8 +257,7 @@ class AndroidContextProvider(private val context: Context, locationListening: Bo
           )
           val limitAdTrackingEnabled = isLimitAdTrackingEnabled
             .invoke(advertisingInfo) as Boolean
-          this.limitAdTrackingEnabled =
-            limitAdTrackingEnabled != null && limitAdTrackingEnabled
+          this.limitAdTrackingEnabled = limitAdTrackingEnabled
           val getId = advertisingInfo.javaClass.getMethod("getId")
           advertisingId = getId.invoke(advertisingInfo) as String
         } catch (e: ClassNotFoundException) {
@@ -286,7 +285,7 @@ class AndroidContextProvider(private val context: Context, locationListening: Bo
         )
         val status = getGPSAvailable.invoke(null, context) as Int
         // status 0 corresponds to com.google.android.gms.common.ConnectionResult.SUCCESS;
-        return status != null && status == 0
+        return status == 0
       } catch (e: NoClassDefFoundError) {
         LogcatLogger.logger.warn("Google Play Services Util not found!")
       } catch (e: ClassNotFoundException) {

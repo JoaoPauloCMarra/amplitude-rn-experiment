@@ -22,7 +22,7 @@ object Utils {
         val methodCheckPermission =
           Activity::class.java.getMethod("checkSelfPermission", String::class.java)
         val resultObj = methodCheckPermission.invoke(context, permission)
-        val result = resultObj.toString().toInt()
+        val result = resultObj as? Int
         hasPermission = result == PackageManager.PERMISSION_GRANTED
       } catch (ex: Exception) {
       }
