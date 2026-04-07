@@ -1,6 +1,6 @@
 {
   "name": "amplitude-rn-experiment",
-  "version": "1.0.0",
+  "version": "1.8.1",
   "description": "Storage-agnostic React Native Experiment client for Amplitude services",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -24,11 +24,11 @@
     "generate:version": "genversion --es6 src/gen/version.ts",
     "typescript": "tsc --noEmit",
     "lint": "eslint \"**/*.{ts,tsx}\"",
-    "prepare": "yarn generate:version && bob build",
+    "prepare": "npm run generate:version && bob build",
     "release": "release-it",
-    "example": "yarn --cwd example",
+    "example": "npm install --prefix example",
     "pods": "cd example && pod-install --quiet",
-    "bootstrap": "yarn example && yarn && yarn pods"
+    "bootstrap": "npm run example && npm run pods"
   },
   "keywords": [
     "react-native",
@@ -39,7 +39,7 @@
   "author": "Joao Paulo C. Marra",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/amplitude/experiment-react-native-client/issues"
+    "url": "https://github.com/JoaoPauloCMarra/amplitude-rn-experiment/issues"
   },
   "homepage": "https://github.com/JoaoPauloCMarra/amplitude-rn-experiment#readme",
   "publishConfig": {
@@ -92,7 +92,7 @@
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "yarn lint && yarn typescript"
+      "pre-commit": "npm run lint && npm run typescript"
     }
   },
   "commitlint": {

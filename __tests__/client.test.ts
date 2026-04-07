@@ -1210,6 +1210,46 @@ describe('setTracksAssignment', () => {
     );
   });
 
+  test('setTracksAssignment persists with custom storage', async () => {
+    const storageObject: Record<string, string> = {};
+    const storage = {
+      get: async (key: string) => storageObject[key] ?? null,
+      put: async (key: string, value: string) => {
+        storageObject[key] = value;
+      },
+      delete: async (key: string) => {
+        delete storageObject[key];
+      },
+    } as Storage;
+
+    const client = new ExperimentClient(API_KEY, { storage });
+    await client.setTracksAssignment(true);
+
+    const client2 = new ExperimentClient(API_KEY, { storage });
+    await client2.cacheReady();
+
+    const getVariantsSpy = jest.spyOn(
+      (client2 as any).evaluationApi,
+      'getVariants',
+    );
+    getVariantsSpy.mockResolvedValue({
+      'test-flag': { key: 'on', value: 'on' },
+    });
+
+    await client2.fetch(testUser);
+
+    expect(getVariantsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: testUser.user_id,
+        library: expect.stringContaining('experiment-react-native-client'),
+      }),
+      expect.objectContaining({
+        trackingOption: 'track',
+        timeoutMillis: expect.any(Number),
+      }),
+    );
+  });
+
   test('multiple calls to setTracksAssignment uses the latest setting', async () => {
     const client = new ExperimentClient(API_KEY, {});
 

@@ -9,7 +9,7 @@ custom `storage` hook so apps can inject persistent storage.
 ## Install
 
 ```sh
-bun add amplitude-rn-experiment
+npm install amplitude-rn-experiment
 ```
 
 ## Default storage behavior
@@ -17,8 +17,10 @@ bun add amplitude-rn-experiment
 If you initialize the client without a `storage` implementation, the SDK uses
 built-in in-memory storage for cached variants and flag data.
 
-That is fine for tests and development. It is not the recommended production
-setup if you want cached variants or flag state to survive app restarts.
+That is fine for tests and development.
+
+Do not ship the memory fallback as your production storage strategy if you want
+cached variants or flag state to survive app restarts.
 
 ## Usage
 
@@ -38,6 +40,7 @@ type Storage = {
   get(key: string): Promise<string | null>;
   put(key: string, value: string): Promise<void>;
   delete(key: string): Promise<void>;
+  reset?(): Promise<void>;
 };
 ```
 
@@ -77,3 +80,18 @@ this fork.
 The public Experiment API stays close to the upstream React Native client. The
 main behavioral difference is the default storage backend: this fork defaults
 to memory instead of AsyncStorage.
+
+## Fork lineage
+
+- upstream base: `@amplitude/experiment-react-native-client@1.8.0`
+- fork release: `amplitude-rn-experiment@1.8.1`
+
+## Validation matrix
+
+| Surface | Verified |
+| --- | --- |
+| Upstream Experiment API shape | close to `@amplitude/experiment-react-native-client@1.8.0` |
+| Package build | `bob build` |
+| TypeScript | `tsc --noEmit` |
+| Built-in memory storage | regression tests |
+| Custom `storage` | regression tests |
