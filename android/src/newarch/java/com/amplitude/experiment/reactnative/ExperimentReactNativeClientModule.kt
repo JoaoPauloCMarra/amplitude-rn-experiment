@@ -1,11 +1,12 @@
 package com.amplitude.experiment.reactnative
 
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.bridge.ReactMethod
 
-class ExperimentReactNativeClientModule(reactContext: ReactApplicationContext) :
-    NativeExperimentReactNativeClientSpec(reactContext) {
+class ExperimentReactNativeClientModule(private val reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
 
     private val expRnClient = ExperimentReactNativeClientImpl(reactContext)
 
@@ -14,8 +15,8 @@ class ExperimentReactNativeClientModule(reactContext: ReactApplicationContext) :
         return ExperimentReactNativeClientImpl.NAME
     }
 
-    @Override
-    override fun getApplicationContext(promise: Promise) {
+    @ReactMethod
+    fun getApplicationContext(promise: Promise) {
         expRnClient.getApplicationContext(promise)
     }
 }
