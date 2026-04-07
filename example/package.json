@@ -1,6 +1,6 @@
 {
-  "name": "@amplitude/experiment-react-native-client-example",
-  "description": "Example app for @amplitude/experiment-react-native-client",
+  "name": "amplitude-rn-experiment-example",
+  "description": "Example app for amplitude-rn-experiment",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -13,9 +13,8 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "@amplitude/analytics-react-native": "^1.5.16",
-    "@amplitude/experiment-react-native-client": "../",
-    "@react-native-async-storage/async-storage": "^2.0.0",
+    "amplitude-rn-analytics": "file:../../amplitude-rn-analytics/packages/analytics-react-native",
+    "amplitude-rn-experiment": "../",
     "react": "18.2.0",
     "react-native": "0.74.5"
   },

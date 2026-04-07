@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		5E555C0D2413F4C50049A1A2 /* ExperimentReactNativeClient.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* ExperimentReactNativeClient.m */; };
 		F4FF95D7245B92E800C19C63 /* ExperimentReactNativeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4FF95D6245B92E800C19C63 /* ExperimentReactNativeClient.swift */; };
-		2646B18E06A6417189417F8B /* libRNCAsyncStorage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C7C9EF8E036F4D4BAF43E65D /* libRNCAsyncStorage.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,8 +28,6 @@
 		B3E7B5891CC2AC0600A0062D /* ExperimentReactNativeClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExperimentReactNativeClient.m; sourceTree = "<group>"; };
 		F4FF95D5245B92E700C19C63 /* ExperimentReactNativeClient-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ExperimentReactNativeClient-Bridging-Header.h"; sourceTree = "<group>"; };
 		F4FF95D6245B92E800C19C63 /* ExperimentReactNativeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperimentReactNativeClient.swift; sourceTree = "<group>"; };
-		FC49439450BB498E87A3D554 /* RNCAsyncStorage.xcodeproj */ = {isa = PBXFileReference; name = "RNCAsyncStorage.xcodeproj"; path = "../node_modules/@react-native-community/async-storage/ios/RNCAsyncStorage.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
-		C7C9EF8E036F4D4BAF43E65D /* libRNCAsyncStorage.a */ = {isa = PBXFileReference; name = "libRNCAsyncStorage.a"; path = "libRNCAsyncStorage.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -38,7 +35,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2646B18E06A6417189417F8B /* libRNCAsyncStorage.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,7 +63,6 @@
 		7060755C45464EB38D305143 /* Libraries */ = {
 			isa = "PBXGroup";
 			children = (
-				FC49439450BB498E87A3D554 /* RNCAsyncStorage.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";

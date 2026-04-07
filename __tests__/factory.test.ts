@@ -1,12 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { Experiment } from '../src/factory';
+import { LocalStorage } from '../src/storage/local-storage';
 
 const API_KEY = 'client-DvWljIjiiuqLbyjqdvBaLFfEBrAvGuA3';
 const OTHER_KEY = 'some-other-key';
 
 beforeEach(async () => {
-  await AsyncStorage.clear();
+  await new LocalStorage().reset();
 });
 
 test('Experiment.initialize, default instance name and api key, same object', async () => {

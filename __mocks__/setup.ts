@@ -1,10 +1,4 @@
-import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 import { NativeModules } from 'react-native';
-
-/*
- * Mock AsyncStorage
- */
-jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
 
 /*
  * Mock navigator to avoid undefined access in analytics-connector

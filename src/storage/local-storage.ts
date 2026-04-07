@@ -1,19 +1,23 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { Storage } from '../types/storage';
 
-export class LocalStorage implements Storage {
+export class MemoryStorage implements Storage {
+  private static memoryStorage = new Map<string, string>();
+
   async get(key: string): Promise<string | null> {
-    return await AsyncStorage.getItem(key);
+    return MemoryStorage.memoryStorage.get(key) ?? null;
   }
 
   async put(key: string, value: string): Promise<void> {
-    await AsyncStorage.setItem(key, value);
-    return;
+    MemoryStorage.memoryStorage.set(key, value);
   }
 
   async delete(key: string): Promise<void> {
-    await AsyncStorage.removeItem(key);
-    return;
+    MemoryStorage.memoryStorage.delete(key);
+  }
+
+  async reset(): Promise<void> {
+    MemoryStorage.memoryStorage.clear();
   }
 }
+
+export class LocalStorage extends MemoryStorage {}

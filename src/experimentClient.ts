@@ -28,7 +28,7 @@ import {
   LoadStoreCache,
   SingleValueStoreCache,
 } from './storage/cache';
-import { LocalStorage } from './storage/local-storage';
+import { MemoryStorage } from './storage/local-storage';
 import { FetchHttpClient, WrapperClient } from './transport/http';
 import { Client, FetchOptions } from './types/client';
 import { ExperimentConfig, Defaults } from './types/config';
@@ -142,7 +142,7 @@ export class ExperimentClient implements Client {
       httpClient,
     );
     // Storage & Caching
-    const storage = this.config.storage || new LocalStorage();
+    const storage = this.config.storage || new MemoryStorage();
     this.variants = getVariantStorage(
       this.apiKey,
       this.config.instanceName,

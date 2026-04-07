@@ -150,7 +150,7 @@ export interface ExperimentConfig {
 
   /**
    * (Advanced) Use your own storage implementation.
-   * If not provided, the client will use the default local storage implementation, which is AsyncStorage.
+   * If not provided, the client will use the built-in shared memory storage implementation.
    */
   storage?: Storage;
 }

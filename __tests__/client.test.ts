@@ -1,10 +1,10 @@
 import { AnalyticsConnector } from '@amplitude/analytics-connector';
 import { FetchError } from '@amplitude/experiment-core';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Exposure } from '../lib/typescript';
 import { ExperimentClient } from '../src/experimentClient';
 import { ConnectorExposureTrackingProvider } from '../src/integration/connector';
+import { LocalStorage } from '../src/storage/local-storage';
 import { FetchOptions } from '../src/types/client';
 import { ExposureTrackingProvider } from '../src/types/exposure';
 import { Source } from '../src/types/source';
@@ -47,7 +47,7 @@ const explicitFallbackVariant: Variant = {
 const unknownKey = 'not-a-valid-key';
 
 beforeEach(async () => {
-  await AsyncStorage.clear();
+  await new LocalStorage().reset();
 });
 
 class TestHttpClient implements HttpClient {
@@ -1118,7 +1118,7 @@ describe('fetch retry with different response codes', () => {
 
 describe('setTracksAssignment', () => {
   beforeEach(async () => {
-    await AsyncStorage.clear();
+    await new LocalStorage().reset();
     jest.restoreAllMocks();
   });
 

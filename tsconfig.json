@@ -2,7 +2,10 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@amplitude/experiment-react-native-client": ["./src/index"]
+      "amplitude-rn-experiment": ["./src/index"],
+      "amplitude-rn-analytics": [
+        "../amplitude-rn-analytics/packages/analytics-react-native/lib/typescript/index"
+      ]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
