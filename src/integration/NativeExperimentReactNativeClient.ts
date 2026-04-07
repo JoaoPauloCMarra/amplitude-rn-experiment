@@ -1,7 +1,6 @@
-import type { TurboModule } from 'react-native';
-import { TurboModuleRegistry } from 'react-native';
+import { NativeModules } from 'react-native';
 
-export interface Spec extends TurboModule {
+export interface Spec {
   getApplicationContext(): Promise<{
     version?: string;
     platform?: string;
@@ -14,4 +13,7 @@ export interface Spec extends TurboModule {
   }>;
 }
 
-export default TurboModuleRegistry.get<Spec>('ExperimentReactNativeClient');
+export default NativeModules.ExperimentReactNativeClient as
+  | Spec
+  | undefined
+  | null;

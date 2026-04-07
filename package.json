@@ -1,6 +1,6 @@
 {
   "name": "amplitude-rn-experiment",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "Storage-agnostic React Native Experiment client for Amplitude services",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
