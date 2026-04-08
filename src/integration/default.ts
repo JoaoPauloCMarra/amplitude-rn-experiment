@@ -29,8 +29,18 @@ export class DefaultUserProvider implements ExperimentUserProvider {
       AnalyticsConnector.getInstance(
         'context',
       ).applicationContextProvider.getApplicationContext();
-    this.load();
-    this.poller.start();
+    this.start();
+  }
+
+  public start(): void {
+    void this.load();
+    if (this.shouldPollUserCache()) {
+      this.poller.start();
+    }
+  }
+
+  public stop(): void {
+    this.poller.stop();
   }
 
   /**
@@ -45,7 +55,7 @@ export class DefaultUserProvider implements ExperimentUserProvider {
       return this.cachedApplicationContext;
     } else if (isNative()) {
       this.cachedApplicationContext =
-        await this.nativeModule?.getApplicationContext();
+        (await this.nativeModule?.getApplicationContext()) || {};
       return this.cachedApplicationContext;
     } else {
       this.cachedApplicationContext = this.applicationContext;
@@ -75,5 +85,12 @@ export class DefaultUserProvider implements ExperimentUserProvider {
       ...context,
       ...baseUser,
     };
+  }
+
+  private shouldPollUserCache(): boolean {
+    return (
+      !!this.baseProvider &&
+      !(this.baseProvider instanceof ConnectorUserProvider)
+    );
   }
 }

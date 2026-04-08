@@ -43,3 +43,72 @@ jobs:
 
     - name: Test
       run: yarn test
+
+  android-example:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+    - name: Cache Node Modules
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+    - name: Setup Node
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: '20'
+
+    - name: Install root dependencies
+      run: yarn install --frozen-lockfile
+
+    - name: Install example dependencies
+      run: yarn install --cwd example --frozen-lockfile
+
+    - name: Build package
+      run: yarn
+
+    - name: Build Android example
+      run: cd example/android && ./gradlew :app:assembleDebug
+
+  ios-example:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+    - name: Cache Node Modules
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+    - name: Setup Node
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: '20'
+
+    - name: Install root dependencies
+      run: yarn install --frozen-lockfile
+
+    - name: Install example dependencies
+      run: yarn install --cwd example --frozen-lockfile
+
+    - name: Build package
+      run: CURRENT_ARCH=arm64 yarn
+
+    - name: Install pods
+      run: cd example/ios && RCT_NEW_ARCH_ENABLED=1 pod install
+
+    - name: Build iOS example
+      run: |
+        xcodebuild \
+          -workspace example/ios/ExperimentReactNativeClientExample.xcworkspace \
+          -scheme ExperimentReactNativeClientExample \
+          -configuration Debug \
+          -sdk iphonesimulator \
+          -destination 'generic/platform=iOS Simulator' \
+          CODE_SIGNING_ALLOWED=NO \
+          build

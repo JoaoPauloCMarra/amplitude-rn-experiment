@@ -199,6 +199,7 @@ export class ExperimentClient implements Client {
     } else {
       this.isRunning = true;
     }
+    this.defaultUserProvider.start();
     this.setUser(user);
     const flagsReadyPromise = this.doFlags();
     const fetchOnStart = this.config.fetchOnStart ?? true;
@@ -213,9 +214,11 @@ export class ExperimentClient implements Client {
   }
 
   /**
-   * Stop the local flag configuration poller.
+   * Stop background polling and retry work started by the client.
    */
   public stop(): void {
+    this.stopRetries();
+    this.defaultUserProvider.stop();
     if (!this.isRunning) {
       return;
     }

@@ -6,6 +6,10 @@ This fork removes the hard dependency on `@react-native-async-storage/async-stor
 It ships with a built-in shared memory storage fallback and keeps the upstream
 custom `storage` hook so apps can inject persistent storage.
 
+The fork also carries React Native compatibility fixes that have not all landed
+in an upstream release yet, including new-architecture and Android build
+compatibility work.
+
 ## Install
 
 ```sh
@@ -81,10 +85,27 @@ The public Experiment API stays close to the upstream React Native client. The
 main behavioral difference is the default storage backend: this fork defaults
 to memory instead of AsyncStorage.
 
+Additional fork-only maintenance includes:
+
+- Android compatibility fixes for modern React Native and Gradle toolchains
+- React Native new-architecture integration fixes
+- concurrent fetch response ordering protection
+- explicit logger injection support
+- user-session exposure cache invalidation on identity change
+
 ## Fork lineage
 
 - upstream base: `@amplitude/experiment-react-native-client@1.8.0`
-- fork release: `amplitude-rn-experiment@1.8.1`
+- fork package version: `amplitude-rn-experiment@1.8.6`
+
+## Maintenance policy
+
+This package is maintained as an active fork, not a one-off patch release.
+
+- upstream changes should be reviewed regularly for compatibility and bug fixes
+- native compatibility regressions should be validated against the example apps
+- storage behavior should remain dependency-free by default and persistence
+  should stay opt-in via custom `storage`
 
 ## Validation matrix
 
@@ -93,5 +114,9 @@ to memory instead of AsyncStorage.
 | Upstream Experiment API shape | close to `@amplitude/experiment-react-native-client@1.8.0` |
 | Package build | `bob build` |
 | TypeScript | `tsc --noEmit` |
+| Lint | `eslint "**/*.{ts,tsx}"` |
 | Built-in memory storage | regression tests |
 | Custom `storage` | regression tests |
+| Stop lifecycle cleanup | regression tests |
+| Android manifest permission surface | regression tests |
+| Example native apps | CI smoke builds |

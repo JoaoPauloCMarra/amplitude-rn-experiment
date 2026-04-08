@@ -13,7 +13,7 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "amplitude-rn-analytics": "file:../../amplitude-rn-analytics/packages/analytics-react-native",
+    "@amplitude/analytics-react-native": "1.5.52",
     "amplitude-rn-experiment": "../",
     "react": "18.2.0",
     "react-native": "0.74.5"

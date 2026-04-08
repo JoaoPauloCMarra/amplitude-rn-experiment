@@ -189,6 +189,7 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				743BD6A092EB1BFB719FB1DB /* [CP] Copy Pods Resources */,
+				E2F97D3989BF4E2CA2FD9E24 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -355,17 +356,33 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ExperimentReactNativeClientExample/Pods-ExperimentReactNativeClientExample-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/RCTI18nStrings.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCAsyncStorage_resources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCTI18nStrings.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ExperimentReactNativeClientExample/Pods-ExperimentReactNativeClientExample-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		E2F97D3989BF4E2CA2FD9E24 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ExperimentReactNativeClientExample/Pods-ExperimentReactNativeClientExample-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ExperimentReactNativeClientExample/Pods-ExperimentReactNativeClientExample-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		F83F492EFC83242A6D6BBD10 /* [CP] Check Pods Manifest.lock */ = {
@@ -736,7 +753,7 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
-				USE_HERMES = false;
+				USE_HERMES = true;
 			};
 			name = Debug;
 		};
@@ -798,7 +815,7 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
-				USE_HERMES = false;
+				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

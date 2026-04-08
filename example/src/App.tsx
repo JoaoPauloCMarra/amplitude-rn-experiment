@@ -3,9 +3,9 @@ import {
   Variant,
   Variants,
 } from 'amplitude-rn-experiment';
+import { init, track } from '@amplitude/analytics-react-native';
 import * as React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import { init, track } from 'amplitude-rn-analytics';
 
 export default function App() {
   const [variant, setVariant] = React.useState<Variant | undefined>();
