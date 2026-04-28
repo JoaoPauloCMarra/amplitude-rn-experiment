@@ -6,7 +6,8 @@ export const isNullOrUndefined = (value: unknown): boolean => {
 
 export const isNullUndefinedOrEmpty = (value: unknown): boolean => {
   if (isNullOrUndefined(value)) return true;
-  return value && Object.keys(value).length === 0;
+  if (value === null || typeof value !== 'object') return false;
+  return Object.keys(value).length === 0;
 };
 
 export const isLocalEvaluationMode = (

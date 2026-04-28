@@ -77,13 +77,13 @@ export class SingleValueStoreCache<V> {
 export class LoadStoreCache<V> {
   private readonly namespace: string;
   private readonly storage: Storage;
-  private readonly transformer: (value: unknown) => V | undefined;
+  private readonly transformer?: (value: unknown) => V | undefined;
   private cache: Record<string, V> = {};
 
   constructor(
     namespace: string,
     storage: Storage,
-    transformer?: (value: unknown) => V,
+    transformer?: (value: unknown) => V | undefined,
   ) {
     this.namespace = namespace;
     this.storage = storage;
@@ -118,23 +118,30 @@ export class LoadStoreCache<V> {
 
   public async load(initialValues?: Record<string, V>): Promise<void> {
     const rawValues = await this.storage.get(this.namespace);
-    let jsonValues: Record<string, unknown>;
+    let jsonValues: Record<string, unknown> = {};
+    if (!rawValues) {
+      this.clear();
+      if (initialValues) {
+        this.putAll(initialValues);
+      }
+      return;
+    }
     try {
-      jsonValues = JSON.parse(rawValues) || {};
+      jsonValues = (JSON.parse(rawValues) as Record<string, unknown>) || {};
     } catch {
-      // Do nothing
+      this.clear();
+      if (initialValues) {
+        this.putAll(initialValues);
+      }
       return;
     }
     const values: Record<string, V> = {};
     for (const key of Object.keys(jsonValues)) {
       try {
-        let value: V;
-        if (this.transformer) {
-          value = this.transformer(jsonValues[key]);
-        } else {
-          value = jsonValues[key] as V;
-        }
-        if (value) {
+        const value = this.transformer
+          ? this.transformer(jsonValues[key])
+          : (jsonValues[key] as V);
+        if (value !== undefined) {
           values[key] = value;
         }
       } catch {
@@ -162,26 +169,39 @@ export const transformVariantFromStorage = (
       key: storageValue,
       value: storageValue,
     };
-  } else if (typeof storageValue === 'object') {
+  } else if (typeof storageValue === 'object' && storageValue !== null) {
     // From v1 or v2 object format
-    const key = storageValue['key'];
-    const value = storageValue['value'];
-    const payload = storageValue['payload'];
-    let metadata = storageValue['metadata'];
-    let experimentKey = storageValue['expKey'];
-    if (metadata && metadata.experimentKey) {
-      experimentKey = metadata.experimentKey;
+    const variantRecord = storageValue as Record<string, unknown>;
+    const key = variantRecord.key;
+    const value = variantRecord.value;
+    const payload = variantRecord.payload;
+    const rawMetadata = variantRecord.metadata;
+    let metadata =
+      rawMetadata && typeof rawMetadata === 'object'
+        ? ({ ...rawMetadata } as Record<string, unknown>)
+        : undefined;
+    let experimentKey =
+      typeof variantRecord.expKey === 'string'
+        ? variantRecord.expKey
+        : undefined;
+    const metadataExperimentKey =
+      metadata && typeof metadata.experimentKey === 'string'
+        ? metadata.experimentKey
+        : undefined;
+
+    if (metadataExperimentKey) {
+      experimentKey = metadataExperimentKey;
     } else if (experimentKey) {
       metadata = metadata || {};
-      metadata['experimentKey'] = experimentKey;
+      metadata.experimentKey = experimentKey;
     }
     const variant: Variant = {};
-    if (key) {
+    if (typeof key === 'string') {
       variant.key = key;
-    } else if (value) {
+    } else if (typeof value === 'string') {
       variant.key = value;
     }
-    if (value) variant.value = value;
+    if (typeof value === 'string') variant.value = value;
     if (metadata) variant.metadata = metadata;
     if (payload) variant.payload = payload;
     if (experimentKey) variant.expKey = experimentKey;

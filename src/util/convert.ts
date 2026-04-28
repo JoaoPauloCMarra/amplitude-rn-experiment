@@ -9,13 +9,14 @@ export const convertUserToContext = (
   if (!user) {
     return {};
   }
-  const context: Record<string, unknown> = { user: user };
+  const contextUser: ExperimentUser = { ...user };
+  const context: Record<string, unknown> = { user: contextUser };
   const groups: Record<string, Record<string, unknown>> = {};
   if (!user.groups) {
     return context;
   }
   for (const groupType of Object.keys(user.groups)) {
-    const groupNames = user.groups[groupType];
+    const groupNames: string[] = user.groups[groupType] ?? [];
     if (groupNames.length > 0 && groupNames[0]) {
       const groupName = groupNames[0];
       const groupNameMap: Record<string, unknown> = {
@@ -32,12 +33,14 @@ export const convertUserToContext = (
   if (Object.keys(groups).length > 0) {
     context['groups'] = groups;
   }
-  delete context.user['groups'];
-  delete context.user['group_properties'];
+  delete contextUser.groups;
+  delete contextUser.group_properties;
   return context;
 };
 
-export const convertVariant = (value: string | Variant): Variant => {
+export const convertVariant = (
+  value: string | Variant | undefined,
+): Variant => {
   if (value === null || value === undefined) {
     return {};
   }
@@ -57,9 +60,12 @@ export const convertEvaluationVariantToVariant = (
   if (!evaluationVariant) {
     return {};
   }
-  let experimentKey = undefined;
+  let experimentKey: string | undefined;
   if (evaluationVariant.metadata) {
-    experimentKey = evaluationVariant.metadata['experimentKey'];
+    const metadataExperimentKey = evaluationVariant.metadata['experimentKey'];
+    if (typeof metadataExperimentKey === 'string') {
+      experimentKey = metadataExperimentKey;
+    }
   }
   const variant: Variant = {};
   if (evaluationVariant.key) variant.key = evaluationVariant.key;

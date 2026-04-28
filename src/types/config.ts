@@ -30,7 +30,7 @@ export interface ExperimentConfig {
    * Custom logger implementation. If not provided, a default ConsoleLogger will be used.
    * The logger must implement the Logger interface with methods for error, warn, info, debug, and verbose.
    */
-  loggerProvider?: Logger;
+  loggerProvider?: Logger | null;
 
   /**
    * The name of the instance being initialized. Used for initializing separate
@@ -135,13 +135,13 @@ export interface ExperimentConfig {
    *
    * See {@link ExperimentUserProvider} for more details
    */
-  userProvider?: ExperimentUserProvider;
+  userProvider?: ExperimentUserProvider | null;
 
   /**
    * Provides the ability to track exposure events through a 3rd party analytics
    * implementation.
    */
-  exposureTrackingProvider?: ExposureTrackingProvider;
+  exposureTrackingProvider?: ExposureTrackingProvider | null;
 
   /**
    * (Advanced) Use your own http client.
@@ -152,7 +152,7 @@ export interface ExperimentConfig {
    * (Advanced) Use your own storage implementation.
    * If not provided, the client will use the built-in shared memory storage implementation.
    */
-  storage?: Storage;
+  storage?: Storage | null;
 }
 
 /**

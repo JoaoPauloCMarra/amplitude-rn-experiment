@@ -4,6 +4,7 @@ import path from 'path';
 import { Poller } from '@amplitude/experiment-core';
 
 import { ExperimentClient } from '../src/experimentClient';
+import { Experiment } from '../src/factory';
 import { DefaultUserProvider } from '../src/integration/default';
 import { LocalStorage } from '../src/storage/local-storage';
 import type { HttpClient, SimpleResponse } from '../src/types/transport';
@@ -35,6 +36,7 @@ test('DefaultUserProvider only starts polling when the base provider is async', 
   expect(startSpy).not.toHaveBeenCalled();
 
   const withAsyncProvider = new DefaultUserProvider(new AsyncUserProvider());
+  withAsyncProvider.start();
   withAsyncProvider.stop();
   expect(startSpy).toHaveBeenCalledTimes(1);
 });
@@ -91,6 +93,22 @@ test('ExperimentClient.stop stops the default user provider lifecycle', () => {
   client.stop();
 
   expect(stopSpy).toHaveBeenCalledTimes(1);
+});
+
+test('Experiment.initialize does not eagerly start the default user provider', () => {
+  const startSpy = jest.spyOn(DefaultUserProvider.prototype, 'start');
+
+  Experiment.initialize(API_KEY);
+
+  expect(startSpy).not.toHaveBeenCalled();
+});
+
+test('ExperimentClient ignores invalid initialFlags payloads', () => {
+  expect(() => {
+    new ExperimentClient(API_KEY, {
+      initialFlags: '{invalid-json',
+    });
+  }).not.toThrow();
 });
 
 test('Android manifests do not request coarse location permission', () => {

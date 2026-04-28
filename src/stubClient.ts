@@ -25,7 +25,11 @@ export class StubExperimentClient implements Client {
   }
 
   public getUserProvider(): ExperimentUserProvider {
-    return null;
+    return {
+      async getUser(): Promise<ExperimentUser> {
+        return {};
+      },
+    };
   }
 
   public setUserProvider(
@@ -35,7 +39,7 @@ export class StubExperimentClient implements Client {
   }
 
   public variant(_key: string, _fallback?: string | Variant): Variant {
-    return Defaults.fallbackVariant;
+    return Defaults.fallbackVariant ?? {};
   }
 
   public all(): Variants {
