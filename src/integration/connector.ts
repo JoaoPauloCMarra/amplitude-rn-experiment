@@ -44,7 +44,7 @@ export class ConnectorUserProvider implements ExperimentUserProvider {
 
   getUserSync(): ExperimentUser {
     const identity = this.identityStore.getIdentity();
-    let userProperties: UserProperties;
+    let userProperties: UserProperties | undefined;
     try {
       userProperties = identity.userProperties as UserProperties;
     } catch {

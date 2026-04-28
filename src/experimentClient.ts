@@ -62,6 +62,31 @@ const flagPollerIntervalMillis = 60000;
 const euServerUrl = 'https://api.lab.eu.amplitude.com';
 const euFlagsServerUrl = 'https://flag.lab.eu.amplitude.com';
 
+type ResolvedExperimentConfig = ExperimentConfig & {
+  debug: boolean;
+  logLevel: LogLevel;
+  loggerProvider: NonNullable<ExperimentConfig['loggerProvider']> | null;
+  instanceName: string;
+  fallbackVariant: Variant;
+  initialVariants: Variants;
+  source: Source;
+  serverUrl: string;
+  flagsServerUrl: string;
+  serverZone: 'US' | 'EU';
+  fetchTimeoutMillis: number;
+  retryFetchOnFailure: boolean;
+  automaticExposureTracking: boolean;
+  pollOnStart: boolean;
+  fetchOnStart: boolean;
+  automaticFetchOnAmplitudeIdentityChange: boolean;
+  userProvider: ExperimentUserProvider | null;
+  exposureTrackingProvider: NonNullable<
+    ExperimentConfig['exposureTrackingProvider']
+  > | null;
+  httpClient: NonNullable<ExperimentConfig['httpClient']>;
+  storage: NonNullable<ExperimentConfig['storage']> | null;
+};
+
 /**
  * The default {@link Client} used to fetch variations from Experiment's
  * servers.
@@ -70,14 +95,14 @@ const euFlagsServerUrl = 'https://flag.lab.eu.amplitude.com';
  */
 export class ExperimentClient implements Client {
   private readonly apiKey: string;
-  private readonly config: ExperimentConfig;
+  private readonly config: ResolvedExperimentConfig;
   private readonly logger: AmpLogger;
   private readonly variants: LoadStoreCache<Variant>;
   private readonly flags: LoadStoreCache<EvaluationFlag>;
   private readonly flagApi: FlagApi;
   private readonly evaluationApi: EvaluationApi;
   private readonly engine: EvaluationEngine = new EvaluationEngine();
-  private user: ExperimentUser | undefined;
+  private user: ExperimentUser = {};
   private readonly defaultUserProvider: DefaultUserProvider;
   private userSessionExposureTracker: UserSessionExposureTracker | undefined;
   private retriesBackoff: Backoff | undefined;
@@ -86,7 +111,7 @@ export class ExperimentClient implements Client {
     flagPollerIntervalMillis,
   );
   private isRunning = false;
-  private readonly flagsAndVariantsLoadedPromise: Promise<void>[] | undefined;
+  private readonly flagsAndVariantsLoadedPromise: Promise<void>[];
   private readonly initialFlags: EvaluationFlag[] | undefined;
   private fetchSequenceNumber = 0;
   private storedFetchSequenceNumber = 0;
@@ -103,19 +128,52 @@ export class ExperimentClient implements Client {
    */
   public constructor(apiKey: string, config: ExperimentConfig) {
     this.apiKey = apiKey;
-    // Merge configs with defaults and wrap providers
+    const serverZone = config?.serverZone ?? Defaults.serverZone ?? 'US';
     this.config = {
       ...Defaults,
       ...config,
-      // Set server URLs separately
+      debug: config?.debug ?? Defaults.debug ?? false,
+      logLevel: config?.logLevel ?? Defaults.logLevel ?? LogLevel.Error,
+      loggerProvider: config?.loggerProvider ?? Defaults.loggerProvider ?? null,
+      instanceName:
+        config?.instanceName ?? Defaults.instanceName ?? '$default_instance',
+      fallbackVariant:
+        config?.fallbackVariant ?? Defaults.fallbackVariant ?? {},
+      initialVariants:
+        config?.initialVariants ?? Defaults.initialVariants ?? {},
+      source: config?.source ?? Defaults.source ?? Source.LocalStorage,
+      serverZone,
       serverUrl:
-        config?.serverUrl ||
-        (config?.serverZone === 'EU' ? euServerUrl : Defaults.serverUrl),
+        config?.serverUrl ??
+        (serverZone === 'EU'
+          ? euServerUrl
+          : Defaults.serverUrl ?? 'https://api.lab.amplitude.com'),
       flagsServerUrl:
-        config?.flagsServerUrl ||
-        (config?.serverZone === 'EU'
+        config?.flagsServerUrl ??
+        (serverZone === 'EU'
           ? euFlagsServerUrl
-          : Defaults.flagsServerUrl),
+          : Defaults.flagsServerUrl ?? 'https://flag.lab.amplitude.com'),
+      fetchTimeoutMillis:
+        config?.fetchTimeoutMillis ?? Defaults.fetchTimeoutMillis ?? 10000,
+      retryFetchOnFailure:
+        config?.retryFetchOnFailure ?? Defaults.retryFetchOnFailure ?? true,
+      automaticExposureTracking:
+        config?.automaticExposureTracking ??
+        Defaults.automaticExposureTracking ??
+        true,
+      pollOnStart: config?.pollOnStart ?? Defaults.pollOnStart ?? true,
+      fetchOnStart: config?.fetchOnStart ?? Defaults.fetchOnStart ?? true,
+      automaticFetchOnAmplitudeIdentityChange:
+        config?.automaticFetchOnAmplitudeIdentityChange ??
+        Defaults.automaticFetchOnAmplitudeIdentityChange ??
+        false,
+      userProvider: config?.userProvider ?? Defaults.userProvider ?? null,
+      exposureTrackingProvider:
+        config?.exposureTrackingProvider ??
+        Defaults.exposureTrackingProvider ??
+        null,
+      httpClient: config?.httpClient ?? Defaults.httpClient ?? FetchHttpClient,
+      storage: config?.storage ?? Defaults.storage ?? null,
     };
     this.logger = new AmpLogger(
       this.config.loggerProvider || new ConsoleLogger(),
@@ -152,7 +210,11 @@ export class ExperimentClient implements Client {
     );
     this.flags = getFlagStorage(this.apiKey, this.config.instanceName, storage);
     if (this.config.initialFlags) {
-      this.initialFlags = JSON.parse(this.config.initialFlags);
+      try {
+        this.initialFlags = JSON.parse(this.config.initialFlags);
+      } catch (error) {
+        this.logger.warn(error);
+      }
     }
     this.fetchVariantsOptions = getVariantsOptionsStorage(
       this.apiKey,
@@ -200,7 +262,7 @@ export class ExperimentClient implements Client {
       this.isRunning = true;
     }
     this.defaultUserProvider.start();
-    this.setUser(user);
+    this.setUser(user ?? {});
     const flagsReadyPromise = this.doFlags();
     const fetchOnStart = this.config.fetchOnStart ?? true;
     if (fetchOnStart) {
@@ -253,10 +315,11 @@ export class ExperimentClient implements Client {
     user: ExperimentUser = this.user,
     options?: FetchOptions,
   ): Promise<ExperimentClient> {
-    this.setUser(user || {});
+    const fetchUser = user ?? this.user;
+    this.setUser(fetchUser);
     try {
       await this.fetchInternal(
-        user,
+        fetchUser,
         this.config.fetchTimeoutMillis,
         this.config.retryFetchOnFailure,
         options,
@@ -355,7 +418,7 @@ export class ExperimentClient implements Client {
    */
   public getUser(): ExperimentUser {
     if (!this.user) {
-      return this.user;
+      return {};
     }
     if (this.user?.user_properties) {
       const userPropertiesCopy = { ...this.user.user_properties };
@@ -372,7 +435,7 @@ export class ExperimentClient implements Client {
    */
   public setUser(user: ExperimentUser): void {
     if (!user) {
-      this.user = null;
+      this.user = {};
       return;
     }
     if (this.user?.user_properties) {
@@ -467,7 +530,7 @@ export class ExperimentClient implements Client {
       sourceVariant = this.initialVariantsVariantAndSource(key, fallback);
     }
     const flag = this.flags.get(key);
-    if (isLocalEvaluationMode(flag) || (!sourceVariant.variant && flag)) {
+    if (flag && (isLocalEvaluationMode(flag) || !sourceVariant.variant)) {
       sourceVariant = this.localEvaluationVariantAndSource(key, flag, fallback);
     }
     return sourceVariant;
@@ -686,7 +749,7 @@ export class ExperimentClient implements Client {
       const variants = await this.doFetch(user, timeoutMillis, options);
       await this.storeVariants(variants, sequenceNumber, options);
       return variants;
-    } catch (e) {
+    } catch (e: unknown) {
       if (retry && this.shouldRetryFetch(e)) {
         this.startRetries(user, options);
       }
@@ -865,7 +928,7 @@ export class ExperimentClient implements Client {
     return config.logLevel ?? LogLevel.Warn;
   }
 
-  private shouldRetryFetch(e: Error): boolean {
+  private shouldRetryFetch(e: unknown): boolean {
     if (e instanceof FetchError) {
       return e.statusCode < 400 || e.statusCode >= 500 || e.statusCode === 429;
     }

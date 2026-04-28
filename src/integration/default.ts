@@ -19,17 +19,16 @@ export class DefaultUserProvider implements ExperimentUserProvider {
     | undefined
     | null = NativeExperimentReactNativeClient;
   private readonly applicationContext: ApplicationContext;
-  public cachedUser: ExperimentUser | undefined;
-  public cachedApplicationContext: Record<string, string>;
+  public cachedUser: ExperimentUser = {};
+  public cachedApplicationContext?: Record<string, string>;
   private readonly poller: Poller = new Poller(() => this.load(), 1000);
 
-  constructor(baseProvider: ExperimentUserProvider = null) {
+  constructor(baseProvider: ExperimentUserProvider | null = null) {
     this.baseProvider = baseProvider;
     this.applicationContext =
       AnalyticsConnector.getInstance(
         'context',
       ).applicationContextProvider.getApplicationContext();
-    this.start();
   }
 
   public start(): void {
@@ -47,15 +46,23 @@ export class DefaultUserProvider implements ExperimentUserProvider {
    * The variant method is not async
    */
   async load(): Promise<void> {
-    this.cachedUser = await this.getUser();
+    try {
+      this.cachedUser = await this.getUser();
+    } catch {
+      this.cachedUser = this.cachedUser || {};
+    }
   }
 
   async getApplicationContext(): Promise<Record<string, string>> {
     if (this.cachedApplicationContext) {
       return this.cachedApplicationContext;
     } else if (isNative()) {
-      this.cachedApplicationContext =
-        (await this.nativeModule?.getApplicationContext()) || {};
+      try {
+        this.cachedApplicationContext =
+          (await this.nativeModule?.getApplicationContext()) || {};
+      } catch {
+        this.cachedApplicationContext = {};
+      }
       return this.cachedApplicationContext;
     } else {
       this.cachedApplicationContext = this.applicationContext;
@@ -64,13 +71,11 @@ export class DefaultUserProvider implements ExperimentUserProvider {
   }
 
   getUserSync(): ExperimentUser {
-    const context = this.cachedApplicationContext;
-    let user: ExperimentUser;
+    const context = this.cachedApplicationContext ?? {};
+    let user: ExperimentUser = this.cachedUser;
     if (this.baseProvider instanceof ConnectorUserProvider) {
       const connectorProvider = this.baseProvider as ConnectorUserProvider;
       user = connectorProvider.getUserSync();
-    } else {
-      user = this.cachedUser;
     }
     return {
       ...context,
@@ -83,7 +88,7 @@ export class DefaultUserProvider implements ExperimentUserProvider {
     const baseUser = await this.baseProvider?.getUser();
     return {
       ...context,
-      ...baseUser,
+      ...(baseUser ?? {}),
     };
   }
 

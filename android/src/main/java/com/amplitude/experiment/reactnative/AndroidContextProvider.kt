@@ -120,6 +120,7 @@ class AndroidContextProvider(private val context: Context, locationListening: Bo
     } // Customized Android System without Google Play Service Installed// sometimes the location manager is unavailable// Bad lat / lon values can cause Geocoder to throw IllegalArgumentExceptions// failed to fetch geocoder// Failed to reverse geocode location
 
     // Failed to reverse geocode location
+    @Suppress("DEPRECATION")
     private val countryFromLocation: String?
       private get() {
         if (!isLocationListening) {
@@ -165,11 +166,9 @@ class AndroidContextProvider(private val context: Context, locationListening: Bo
         try {
           val manager = context
             .getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-          if (manager.phoneType != TelephonyManager.PHONE_TYPE_CDMA) {
-            val country = manager.networkCountryIso
-            if (country != null) {
-              return country.uppercase(Locale.US)
-            }
+          val country = manager.networkCountryIso
+          if (!country.isNullOrEmpty()) {
+            return country.uppercase(Locale.US)
           }
         } catch (e: Exception) {
           // Failed to get country from network
@@ -177,6 +176,7 @@ class AndroidContextProvider(private val context: Context, locationListening: Bo
         return null
       }
 
+    @Suppress("DEPRECATION")
     private val locale: Locale
       private get() {
         val configuration = Resources.getSystem().configuration

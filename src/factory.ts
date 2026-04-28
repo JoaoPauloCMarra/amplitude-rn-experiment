@@ -5,10 +5,9 @@ import {
   ConnectorExposureTrackingProvider,
   ConnectorUserProvider,
 } from './integration/connector';
-import { DefaultUserProvider } from './integration/default';
 import { Defaults, ExperimentConfig } from './types/config';
 
-const instances = {};
+const instances: Record<string, ExperimentClient> = {};
 
 /**
  * Initializes a singleton {@link ExperimentClient} identified by the configured
@@ -23,14 +22,11 @@ const initialize = (
 ): ExperimentClient => {
   // Store instances by appending the instance name and api key. Allows for
   // initializing multiple default instances for different api keys.
-  const instanceName = config?.instanceName || Defaults.instanceName;
+  const instanceName =
+    config?.instanceName ?? Defaults.instanceName ?? '$default_instance';
   const instanceKey = `${instanceName}.${apiKey}`;
   if (!instances[instanceKey]) {
-    config = {
-      userProvider: new DefaultUserProvider(),
-      ...config,
-    };
-    instances[instanceKey] = new ExperimentClient(apiKey, config);
+    instances[instanceKey] = new ExperimentClient(apiKey, config || {});
   }
   return instances[instanceKey];
 };
@@ -52,7 +48,8 @@ const initializeWithAmplitudeAnalytics = (
 ): ExperimentClient => {
   // Store instances by appending the instance name and api key. Allows for
   // initializing multiple default instances for different api keys.
-  const instanceName = config?.instanceName || Defaults.instanceName;
+  const instanceName =
+    config?.instanceName ?? Defaults.instanceName ?? '$default_instance';
   const instanceKey = `${instanceName}.${apiKey}`;
   const connector = AnalyticsConnector.getInstance(instanceName);
   if (!instances[instanceKey]) {
