@@ -20,7 +20,11 @@ import java.util.Locale
 import java.util.UUID
 import kotlin.collections.ArrayList
 
-class AndroidContextProvider(private val context: Context, locationListening: Boolean) {
+class AndroidContextProvider(
+  private val context: Context,
+  locationListening: Boolean,
+  private val shouldCollectDeviceIds: Boolean = false
+) {
   var isLocationListening = true
   private var cachedInfo: CachedInfo? = null
     private get() {
@@ -49,7 +53,7 @@ class AndroidContextProvider(private val context: Context, locationListening: Bo
     var appSetId: String
 
     init {
-      advertisingId = fetchAdvertisingId()
+      advertisingId = if (shouldCollectDeviceIds) fetchAdvertisingId() else ""
       versionName = fetchVersionName()
       osName = OS_NAME
       osVersion = fetchOsVersion()
@@ -60,7 +64,7 @@ class AndroidContextProvider(private val context: Context, locationListening: Bo
       country = fetchCountry()
       language = fetchLanguage()
       gpsEnabled = checkGPSEnabled()
-      appSetId = fetchAppSetId()
+      appSetId = if (shouldCollectDeviceIds) fetchAppSetId() else ""
     }
 
     /**

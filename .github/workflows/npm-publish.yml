@@ -1,0 +1,83 @@
+name: Publish npm
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      releaseTag:
+        description: Release tag to validate, for example v1.8.9
+        required: true
+      prerelease:
+        description: Publish with the next dist-tag instead of latest
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish amplitude-rn-experiment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@11.13.0
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Validate release version
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          RELEASE_TAG="${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.releaseTag }}"
+          RELEASE_VERSION="${RELEASE_TAG#v}"
+
+          if [ "$PACKAGE_VERSION" != "$RELEASE_VERSION" ]; then
+            echo "Release tag v$RELEASE_VERSION does not match $PACKAGE_NAME@$PACKAGE_VERSION"
+            exit 1
+          fi
+
+          if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version >/dev/null 2>&1; then
+            echo "$PACKAGE_NAME@$PACKAGE_VERSION is already published"
+            exit 1
+          fi
+
+      - name: Select npm dist-tag
+        run: |
+          if [ "${{ github.event_name == 'release' && github.event.release.prerelease || github.event.inputs.prerelease }}" = "true" ]; then
+            echo "NPM_DIST_TAG=next" >> "$GITHUB_ENV"
+          else
+            echo "NPM_DIST_TAG=latest" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build package
+        run: |
+          npm run typescript
+          npm run prepare
+
+      - name: Publish package
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            npm publish --access public --tag "$NPM_DIST_TAG" --dry-run
+          else
+            npm publish --access public --tag "$NPM_DIST_TAG"
+          fi
