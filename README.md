@@ -96,7 +96,7 @@ Additional fork-only maintenance includes:
 ## Fork lineage
 
 - upstream base: `@amplitude/experiment-react-native-client@1.8.0`
-- fork package version: `amplitude-rn-experiment@1.8.7`
+- fork package version: `amplitude-rn-experiment@1.8.8`
 
 ## Maintenance policy
 
