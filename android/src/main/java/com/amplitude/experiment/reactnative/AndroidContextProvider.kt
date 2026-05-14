@@ -25,7 +25,7 @@ class AndroidContextProvider(
   locationListening: Boolean,
   private val shouldCollectDeviceIds: Boolean = false
 ) {
-  var isLocationListening = true
+  var isLocationListening = locationListening
   private var cachedInfo: CachedInfo? = null
     private get() {
       if (field == null) {
@@ -61,9 +61,9 @@ class AndroidContextProvider(
       manufacturer = fetchManufacturer()
       model = fetchModel()
       carrier = fetchCarrier()
-      country = fetchCountry()
+      country = if (isLocationListening) fetchCountry() else null
       language = fetchLanguage()
-      gpsEnabled = checkGPSEnabled()
+      gpsEnabled = if (isLocationListening) checkGPSEnabled() else false
       appSetId = if (shouldCollectDeviceIds) fetchAppSetId() else ""
     }
 
@@ -410,9 +410,5 @@ class AndroidContextProvider(
     fun generateUUID(): String {
       return UUID.randomUUID().toString()
     }
-  }
-
-  init {
-    isLocationListening = locationListening
   }
 }

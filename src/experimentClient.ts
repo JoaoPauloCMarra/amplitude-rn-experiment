@@ -107,7 +107,7 @@ export class ExperimentClient implements Client {
   private userSessionExposureTracker: UserSessionExposureTracker | undefined;
   private retriesBackoff: Backoff | undefined;
   private poller: Poller = new Poller(
-    () => this.doFlags(),
+    () => this.pollFlags(),
     flagPollerIntervalMillis,
   );
   private isRunning = false;
@@ -116,6 +116,7 @@ export class ExperimentClient implements Client {
   private fetchSequenceNumber = 0;
   private storedFetchSequenceNumber = 0;
   private readonly fetchVariantsOptions: SingleValueStoreCache<GetVariantsOptions>;
+  private readonly stopCallbacks = new Set<() => void>();
 
   /**
    * Creates a new ExperimentClient instance.
@@ -261,17 +262,22 @@ export class ExperimentClient implements Client {
     } else {
       this.isRunning = true;
     }
-    this.defaultUserProvider.start();
-    this.setUser(user ?? {});
-    const flagsReadyPromise = this.doFlags();
-    const fetchOnStart = this.config.fetchOnStart ?? true;
-    if (fetchOnStart) {
-      await Promise.all([this.fetch(user), flagsReadyPromise]);
-    } else {
-      await flagsReadyPromise;
-    }
-    if (this.config.pollOnStart) {
-      this.poller.start();
+    try {
+      this.defaultUserProvider.start();
+      this.setUser(user ?? {});
+      const flagsReadyPromise = this.doFlags();
+      const fetchOnStart = this.config.fetchOnStart ?? true;
+      if (fetchOnStart) {
+        await Promise.all([this.fetch(user), flagsReadyPromise]);
+      } else {
+        await flagsReadyPromise;
+      }
+      if (this.config.pollOnStart) {
+        this.poller.start();
+      }
+    } catch (e) {
+      this.stop();
+      throw e;
     }
   }
 
@@ -281,6 +287,14 @@ export class ExperimentClient implements Client {
   public stop(): void {
     this.stopRetries();
     this.defaultUserProvider.stop();
+    for (const callback of this.stopCallbacks) {
+      try {
+        callback();
+      } catch (e) {
+        this.logger.warn(e);
+      }
+    }
+    this.stopCallbacks.clear();
     if (!this.isRunning) {
       return;
     }
@@ -407,8 +421,7 @@ export class ExperimentClient implements Client {
    */
   public clear(): void {
     this.variants.clear();
-    // eslint-disable-next-line no-void
-    void this.variants.store();
+    void this.variants.store().catch((e) => this.logger.warn(e));
   }
 
   /**
@@ -480,8 +493,15 @@ export class ExperimentClient implements Client {
       ...this.fetchVariantsOptions.get(),
       trackingOption: doTrack ? 'track' : 'no-track',
     });
-    // No need to wait for persistence to complete.
-    this.fetchVariantsOptions.store();
+    await this.fetchVariantsOptions.store();
+  }
+
+  public addStopCallback(callback: () => void): void {
+    this.stopCallbacks.add(callback);
+  }
+
+  public fetchOnIdentityChange(): void {
+    void this.fetch().catch((e) => this.logger.warn(e));
   }
 
   private convertInitialFlagsForStorage(): Record<string, EvaluationFlag> {
@@ -789,6 +809,14 @@ export class ExperimentClient implements Client {
     this.mergeInitialFlagsWithStorage();
   }
 
+  private async pollFlags(): Promise<void> {
+    try {
+      await this.doFlags();
+    } catch (e) {
+      this.logger.warn(e);
+    }
+  }
+
   private async storeVariants(
     variants: Variants,
     sequenceNumber: number,
@@ -818,10 +846,7 @@ export class ExperimentClient implements Client {
     this.logger.debug('[Experiment] Stored variants: ', variants);
   }
 
-  private async startRetries(
-    user: ExperimentUser,
-    options?: FetchOptions,
-  ): Promise<void> {
+  private startRetries(user: ExperimentUser, options?: FetchOptions): void {
     this.logger.debug('[Experiment] Retry fetch');
     this.retriesBackoff = new Backoff(
       fetchBackoffAttempts,

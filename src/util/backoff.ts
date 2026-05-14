@@ -9,7 +9,7 @@ export class Backoff {
   private started = false;
   private done = false;
 
-  private timeoutHandle: any;
+  private timeoutHandle: ReturnType<typeof safeGlobal.setTimeout> | undefined;
 
   public constructor(
     attempts: number,
@@ -23,36 +23,43 @@ export class Backoff {
     this.scalar = scalar;
   }
 
-  public async start(fn: () => Promise<void>): Promise<void> {
+  public start(fn: () => Promise<void>): void {
     if (!this.started) {
       this.started = true;
     } else {
       throw Error('Backoff already started');
     }
-    await this.backoff(fn, 0, this.min);
+    this.backoff(fn, 0, this.min);
   }
 
   public cancel(): void {
     this.done = true;
-    clearTimeout(this.timeoutHandle);
+    if (this.timeoutHandle != null) {
+      safeGlobal.clearTimeout(this.timeoutHandle);
+      this.timeoutHandle = undefined;
+    }
   }
 
-  private async backoff(
+  private backoff(
     fn: () => Promise<void>,
     attempt: number,
     delay: number,
-  ): Promise<void> {
+  ): void {
     if (this.done) {
       return;
     }
     this.timeoutHandle = safeGlobal.setTimeout(async () => {
       try {
+        this.timeoutHandle = undefined;
         await fn();
+        this.done = true;
       } catch (e) {
         const nextAttempt = attempt + 1;
-        if (nextAttempt < this.attempts) {
+        if (!this.done && nextAttempt < this.attempts) {
           const nextDelay = Math.min(delay * this.scalar, this.max);
           this.backoff(fn, nextAttempt, nextDelay);
+        } else {
+          this.done = true;
         }
       }
     }, delay);

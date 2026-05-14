@@ -1,6 +1,6 @@
 {
   "name": "amplitude-rn-experiment",
-  "version": "1.8.9",
+  "version": "1.8.10",
   "description": "Storage-agnostic React Native Experiment client for Amplitude services",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -36,7 +36,10 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/JoaoPauloCMarra/amplitude-rn-experiment",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoaoPauloCMarra/amplitude-rn-experiment.git"
+  },
   "author": "Joao Paulo C. Marra",
   "license": "MIT",
   "bugs": {
@@ -49,7 +52,7 @@
   },
   "dependencies": {
     "@amplitude/analytics-connector": "^1.6.4",
-    "@amplitude/experiment-core": "^0.13.0",
+    "@amplitude/experiment-core": "^0.13.1",
     "unfetch": "^4.2.0"
   },
   "devDependencies": {

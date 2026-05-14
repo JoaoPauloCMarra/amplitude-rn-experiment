@@ -1,4 +1,5 @@
 import { AnalyticsConnector } from '@amplitude/analytics-connector';
+import type { IdentityListener } from '@amplitude/analytics-connector';
 
 import { ExperimentClient } from './experimentClient';
 import {
@@ -62,8 +63,13 @@ const initializeWithAmplitudeAnalytics = (
     };
     instances[instanceKey] = new ExperimentClient(apiKey, config);
     if (config.automaticFetchOnAmplitudeIdentityChange) {
-      connector.identityStore.addIdentityListener(() => {
-        instances[instanceKey].fetch();
+      const client = instances[instanceKey];
+      const listener: IdentityListener = () => {
+        client.fetchOnIdentityChange();
+      };
+      connector.identityStore.addIdentityListener(listener);
+      client.addStopCallback(() => {
+        connector.identityStore.removeIdentityListener(listener);
       });
     }
   }

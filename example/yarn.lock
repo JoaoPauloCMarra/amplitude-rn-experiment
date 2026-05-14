@@ -2,15 +2,15 @@
 # yarn lockfile v1
 
 
-"@amplitude/analytics-connector@^1.4.7", "@amplitude/analytics-connector@^1.6.4":
+"@amplitude/analytics-connector@^1.6.4":
   version "1.6.4"
   resolved "https://registry.yarnpkg.com/@amplitude/analytics-connector/-/analytics-connector-1.6.4.tgz#8a811ff5c8ee46bdfea0e8f61c7578769b5778ed"
   integrity sha512-SpIv0IQMNIq6SH3UqFGiaZyGSc7PBZwRdq7lvP0pBxW8i4Ny+8zwI0pV+VMfMHQwWY3wdIbWw5WQphNjpdq1/Q==
 
-"@amplitude/analytics-core@2.41.5":
-  version "2.41.5"
-  resolved "https://registry.yarnpkg.com/@amplitude/analytics-core/-/analytics-core-2.41.5.tgz#bdcc0c76a3d0bdc024dd7d6d70fa85e1f1c16b5e"
-  integrity sha512-RImmiQTtkwYPuNRsCvqOpz/QbBEt1H4GmYbiiwIXzgvoiIKTvE5h+yqkMGAKAb8Su9lA6cIWqiYucp605a0PkQ==
+"@amplitude/analytics-core@2.48.1":
+  version "2.48.1"
+  resolved "https://registry.yarnpkg.com/@amplitude/analytics-core/-/analytics-core-2.48.1.tgz#1abe65607af7ffde6a4e261892a3e9502501c9ba"
+  integrity sha512-6ltecomnZc9z1AUE59orcoLYii0gPoVBBoI4qoMGXw2lsxFh35zx32LPrXO3ezFkTE71CS44AzwaBFsSxQWRuw==
   dependencies:
     "@amplitude/analytics-connector" "^1.6.4"
     "@types/zen-observable" "0.8.3"
@@ -18,20 +18,20 @@
     tslib "^2.4.1"
     zen-observable "0.10.0"
 
-"@amplitude/analytics-react-native@1.5.52":
-  version "1.5.52"
-  resolved "https://registry.yarnpkg.com/@amplitude/analytics-react-native/-/analytics-react-native-1.5.52.tgz#313e95b14590e2ada850b7b3ff051381346b9092"
-  integrity sha512-Nz2u+oCGOPAMl00zg074Q5Jm5UTUrstyTA8zHXFDe65N/DNFYWKEKvwnNQvn2FIkaNUCORIvjtwMIzxRzNRRww==
+"@amplitude/analytics-react-native@1.5.53":
+  version "1.5.53"
+  resolved "https://registry.yarnpkg.com/@amplitude/analytics-react-native/-/analytics-react-native-1.5.53.tgz#1ac32ee9756d8f2953a5e11259e74b0e4c2cd864"
+  integrity sha512-C1KFraq3xuP+hcCS7krcLdf5OebAdarHTJ2fNe9XuwAQERWie4A4GnHmPmW6Vtz5LpUhAiiEjS8Ugfa/sTQs2g==
   dependencies:
-    "@amplitude/analytics-core" "2.41.5"
+    "@amplitude/analytics-core" "2.48.1"
     "@amplitude/ua-parser-js" "^0.7.31"
     "@react-native-async-storage/async-storage" "^1.17.11"
     tslib "^2.4.1"
 
-"@amplitude/experiment-core@^0.11.0":
-  version "0.11.1"
-  resolved "https://registry.yarnpkg.com/@amplitude/experiment-core/-/experiment-core-0.11.1.tgz#31eb485dc40b65f4cc2f15adab9b62f0df622065"
-  integrity sha512-fHVJazCwwgjUcj49N+yFSLMSroyY0eHImrsmd1ipIjIT1Cez8mh+TvwJQ0LGSdyYvL2NAZM2J5vpXrR1nHgdzg==
+"@amplitude/experiment-core@^0.13.1":
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/@amplitude/experiment-core/-/experiment-core-0.13.1.tgz#660dc3952626af0138ff12eb4d161fa63869ad9c"
+  integrity sha512-ZHvR0dxTltasp8MiMcQ6qKsY20mWnODoy3oebGad6qaRR1ywpUi8IuLf5AwLTM35ZwgzEUTn9TEIWKLHpDwHMw==
   dependencies:
     js-base64 "^3.7.5"
 
@@ -1692,10 +1692,10 @@ acorn@^8.15.0:
   integrity sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==
 
 amplitude-rn-experiment@../:
-  version "1.8.6"
+  version "1.8.10"
   dependencies:
-    "@amplitude/analytics-connector" "^1.4.7"
-    "@amplitude/experiment-core" "^0.11.0"
+    "@amplitude/analytics-connector" "^1.6.4"
+    "@amplitude/experiment-core" "^0.13.1"
     unfetch "^4.2.0"
 
 anser@^1.4.9:

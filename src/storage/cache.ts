@@ -8,12 +8,13 @@ export const getVariantStorage = (
   instanceName: string,
   storage: Storage,
 ): LoadStoreCache<Variant> => {
-  const truncatedDeployment = deploymentKey.substring(deploymentKey.length - 6);
-  const namespace = `amp-exp-${instanceName}-${truncatedDeployment}`;
+  const namespace = getNamespace(deploymentKey, instanceName);
+  const legacyNamespace = getLegacyNamespace(deploymentKey, instanceName);
   return new LoadStoreCache<Variant>(
     namespace,
     storage,
     transformVariantFromStorage,
+    [legacyNamespace],
   );
 };
 
@@ -22,9 +23,14 @@ export const getFlagStorage = (
   instanceName: string,
   storage: Storage,
 ): LoadStoreCache<EvaluationFlag> => {
-  const truncatedDeployment = deploymentKey.substring(deploymentKey.length - 6);
-  const namespace = `amp-exp-${instanceName}-${truncatedDeployment}-flags`;
-  return new LoadStoreCache<EvaluationFlag>(namespace, storage);
+  const namespace = `${getNamespace(deploymentKey, instanceName)}-flags`;
+  const legacyNamespace = `${getLegacyNamespace(
+    deploymentKey,
+    instanceName,
+  )}-flags`;
+  return new LoadStoreCache<EvaluationFlag>(namespace, storage, undefined, [
+    legacyNamespace,
+  ]);
 };
 
 export const getVariantsOptionsStorage = (
@@ -32,18 +38,53 @@ export const getVariantsOptionsStorage = (
   instanceName: string,
   storage: Storage,
 ): SingleValueStoreCache<GetVariantsOptions> => {
+  const namespace = `${getNamespace(
+    deploymentKey,
+    instanceName,
+  )}-variants-options`;
+  const legacyNamespace = `${getLegacyNamespace(
+    deploymentKey,
+    instanceName,
+  )}-variants-options`;
+  return new SingleValueStoreCache<GetVariantsOptions>(namespace, storage, [
+    legacyNamespace,
+  ]);
+};
+
+const getNamespace = (deploymentKey: string, instanceName: string): string => {
+  return `amp-exp-${instanceName}-${hashString(deploymentKey)}`;
+};
+
+const getLegacyNamespace = (
+  deploymentKey: string,
+  instanceName: string,
+): string => {
   const truncatedDeployment = deploymentKey.substring(deploymentKey.length - 6);
-  const namespace = `amp-exp-${instanceName}-${truncatedDeployment}-variants-options`;
-  return new SingleValueStoreCache<GetVariantsOptions>(namespace, storage);
+  return `amp-exp-${instanceName}-${truncatedDeployment}`;
+};
+
+const hashString = (value: string): string => {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
 };
 
 export class SingleValueStoreCache<V> {
   private readonly namespace: string;
+  private readonly legacyNamespaces: string[];
   private readonly storage: Storage;
   private value: V | undefined;
 
-  constructor(namespace: string, storage: Storage) {
+  constructor(
+    namespace: string,
+    storage: Storage,
+    legacyNamespaces: string[] = [],
+  ) {
     this.namespace = namespace;
+    this.legacyNamespaces = legacyNamespaces;
     this.storage = storage;
     this.value = this.get();
   }
@@ -57,9 +98,19 @@ export class SingleValueStoreCache<V> {
   }
 
   public async load(): Promise<void> {
-    const value = await this.storage.get(this.namespace);
+    let value = await this.storage.get(this.namespace);
+    for (const legacyNamespace of this.legacyNamespaces) {
+      if (value) {
+        break;
+      }
+      value = await this.storage.get(legacyNamespace);
+    }
     if (value) {
-      this.value = JSON.parse(value);
+      try {
+        this.value = JSON.parse(value);
+      } catch {
+        this.value = undefined;
+      }
     }
   }
 
@@ -76,6 +127,7 @@ export class SingleValueStoreCache<V> {
 
 export class LoadStoreCache<V> {
   private readonly namespace: string;
+  private readonly legacyNamespaces: string[];
   private readonly storage: Storage;
   private readonly transformer?: (value: unknown) => V | undefined;
   private cache: Record<string, V> = {};
@@ -84,8 +136,10 @@ export class LoadStoreCache<V> {
     namespace: string,
     storage: Storage,
     transformer?: (value: unknown) => V | undefined,
+    legacyNamespaces: string[] = [],
   ) {
     this.namespace = namespace;
+    this.legacyNamespaces = legacyNamespaces;
     this.storage = storage;
     this.transformer = transformer;
   }
@@ -117,7 +171,13 @@ export class LoadStoreCache<V> {
   }
 
   public async load(initialValues?: Record<string, V>): Promise<void> {
-    const rawValues = await this.storage.get(this.namespace);
+    let rawValues = await this.storage.get(this.namespace);
+    for (const legacyNamespace of this.legacyNamespaces) {
+      if (rawValues) {
+        break;
+      }
+      rawValues = await this.storage.get(legacyNamespace);
+    }
     let jsonValues: Record<string, unknown> = {};
     if (!rawValues) {
       this.clear();

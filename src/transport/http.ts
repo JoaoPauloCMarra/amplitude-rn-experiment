@@ -13,25 +13,47 @@ import unfetch from 'unfetch';
 
 import { HttpClient, SimpleResponse } from '../types/transport';
 
-const fetch = safeGlobal.fetch || unfetch;
+const getFetch = () => safeGlobal.fetch || unfetch;
 
-/*
- * Copied from:
- * https://github.com/github/fetch/issues/175#issuecomment-284787564
- */
+type AbortControllerLike = {
+  signal: AbortSignal;
+  abort(): void;
+};
+
+type GlobalScopeWithAbortController = typeof globalThis & {
+  AbortController?: new () => AbortControllerLike;
+};
+
+const getAbortController = (): AbortControllerLike | undefined => {
+  const scope = safeGlobal as GlobalScopeWithAbortController;
+  return typeof scope.AbortController === 'function'
+    ? new scope.AbortController()
+    : undefined;
+};
+
 const timeout = (
   promise: Promise<SimpleResponse>,
   timeoutMillis?: number,
+  abortController?: AbortControllerLike,
 ): Promise<SimpleResponse> => {
-  // Don't timeout if timeout is null or invalid
   if (timeoutMillis == null || timeoutMillis <= 0) {
     return promise;
   }
   return new Promise(function (resolve, reject) {
-    safeGlobal.setTimeout(function () {
+    const timeoutHandle = safeGlobal.setTimeout(function () {
+      abortController?.abort();
       reject(Error('Request timeout after ' + timeoutMillis + ' milliseconds'));
     }, timeoutMillis);
-    promise.then(resolve, reject);
+    promise.then(
+      (value) => {
+        safeGlobal.clearTimeout(timeoutHandle);
+        resolve(value);
+      },
+      (error) => {
+        safeGlobal.clearTimeout(timeoutHandle);
+        reject(error);
+      },
+    );
   });
 };
 
@@ -42,11 +64,13 @@ const _request = (
   data: string,
   timeoutMillis?: number,
 ): Promise<SimpleResponse> => {
+  const abortController = getAbortController();
   const call = async () => {
-    const response = await fetch(requestUrl, {
+    const response = await getFetch()(requestUrl, {
       method: method,
       headers: headers,
       body: data,
+      signal: abortController?.signal,
     });
     const simpleResponse: SimpleResponse = {
       status: response.status,
@@ -54,7 +78,7 @@ const _request = (
     };
     return simpleResponse;
   };
-  return timeout(call(), timeoutMillis);
+  return timeout(call(), timeoutMillis, abortController);
 };
 
 /**

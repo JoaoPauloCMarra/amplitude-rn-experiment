@@ -18,23 +18,31 @@ export class ConnectorUserProvider implements ExperimentUserProvider {
   async identityReady(ms: number): Promise<void> {
     const identity = this.identityStore.getIdentity();
     if (!identity.userId && !identity.deviceId) {
-      return Promise.race([
-        new Promise<void>((resolve) => {
-          const listener = () => {
-            resolve();
-            this.identityStore.removeIdentityListener(listener);
-          };
-          this.identityStore.addIdentityListener(listener);
-        }),
-        new Promise<void>((_, reject) => {
-          safeGlobal.setTimeout(
-            reject,
-            ms,
-            'Timed out waiting for Amplitude Analytics SDK to initialize. ' +
-              'You must ensure that the analytics SDK is initialized prior to calling fetch().',
+      return new Promise<void>((resolve, reject) => {
+        let timeoutHandle: ReturnType<typeof safeGlobal.setTimeout> | undefined;
+        const cleanup = () => {
+          if (timeoutHandle != null) {
+            safeGlobal.clearTimeout(timeoutHandle);
+            timeoutHandle = undefined;
+          }
+          this.identityStore.removeIdentityListener(listener);
+        };
+        const listener = () => {
+          cleanup();
+          resolve();
+        };
+
+        timeoutHandle = safeGlobal.setTimeout(() => {
+          cleanup();
+          reject(
+            Error(
+              'Timed out waiting for Amplitude Analytics SDK to initialize. ' +
+                'You must ensure that the analytics SDK is initialized prior to calling fetch().',
+            ),
           );
-        }),
-      ]);
+        }, ms);
+        this.identityStore.addIdentityListener(listener);
+      });
     }
   }
 

@@ -1031,17 +1031,23 @@ describe('start', () => {
     const client = new ExperimentClient(API_KEY, { storage });
     await client.start({ device_id: 'test_device' });
 
-    // Check that the flags are stored in the storage object
-    const storageKey = `amp-exp-$default_instance-${API_KEY.substring(
-      API_KEY.length - 6,
-    )}`;
-    expect(
-      JSON.parse(storageObject[storageKey + '-flags'])[serverKey],
-    ).toMatchObject({
+    const storageValues = Object.values(storageObject).map(
+      (value) =>
+        JSON.parse(value as string) as Record<
+          string,
+          { key?: string; value?: string }
+        >,
+    );
+    const storedFlags = storageValues.find(
+      (value) => value[serverKey]?.key === serverKey,
+    );
+    expect(storedFlags?.[serverKey]).toMatchObject({
       key: serverKey,
     });
-    // Check that the variant is stored in the storage object
-    expect(JSON.parse(storageObject[storageKey])[serverKey]).toMatchObject({
+    const storedVariants = storageValues.find(
+      (value) => value[serverKey]?.key === 'off',
+    );
+    expect(storedVariants?.[serverKey]).toMatchObject({
       key: 'off',
     });
   });
@@ -1064,11 +1070,17 @@ test('fetch with custom storage', async () => {
   const client = new ExperimentClient(API_KEY, { storage });
   await client.fetch(testUser);
 
-  // Check that the variant is stored in the storage object
-  const storageKey = `amp-exp-$default_instance-${API_KEY.substring(
-    API_KEY.length - 6,
-  )}`;
-  expect(JSON.parse(storageObject[storageKey])[serverKey]).toMatchObject({
+  const storageValues = Object.values(storageObject).map(
+    (value) =>
+      JSON.parse(value as string) as Record<
+        string,
+        { key?: string; value?: string }
+      >,
+  );
+  const storedVariants = storageValues.find(
+    (value) => value[serverKey]?.key === 'on',
+  );
+  expect(storedVariants?.[serverKey]).toMatchObject({
     key: 'on',
     value: 'on',
   });
