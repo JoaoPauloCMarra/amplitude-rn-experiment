@@ -2,13 +2,23 @@
 
 Storage-agnostic React Native Experiment client compatible with Amplitude services.
 
-This fork removes the hard dependency on `@react-native-async-storage/async-storage`.
-It ships with a built-in shared memory storage fallback and keeps the upstream
-custom `storage` hook so apps can inject persistent storage.
+This package builds on the original Amplitude React Native Experiment client
+with a smaller default dependency surface, stronger lifecycle cleanup, and
+modern React Native compatibility fixes.
 
-The fork also carries React Native compatibility fixes that have not all landed
-in an upstream release yet, including new-architecture and Android build
-compatibility work.
+Key improvements over the original package:
+
+- no hard runtime dependency on `@react-native-async-storage/async-storage`
+- built-in shared memory storage fallback for development and tests
+- preserved custom `storage` hook for apps that want persistent storage
+- React Native new-architecture support fixes for Android and iOS
+- Android compatibility fixes for modern Gradle and React Native toolchains
+- safer async handling for initialization, polling, retries, and fetch failures
+- cleanup for retry timers, polling timers, and Amplitude identity listeners
+- cache namespace isolation so projects using different deployment keys do not
+  collide
+- defensive cache parsing for malformed persisted values
+- deterministic tests covering lifecycle, storage, and async failure paths
 
 ## Install
 
@@ -87,11 +97,16 @@ to memory instead of AsyncStorage.
 
 Additional fork-only maintenance includes:
 
-- Android compatibility fixes for modern React Native and Gradle toolchains
-- React Native new-architecture integration fixes
+- safe dependency updates for Amplitude connector and Experiment core packages
 - concurrent fetch response ordering protection
 - explicit logger injection support
+- guarded clear and persistence writes so storage errors are logged instead of
+  becoming unhandled promises
+- retry and polling cleanup to avoid dangling timers after `stop()`
+- Amplitude identity listener cleanup after `stop()`
 - user-session exposure cache invalidation on identity change
+- example app updates for fewer rerenders, safer unmount handling, and direct
+  AsyncStorage autolinking for the analytics example dependency
 
 ## Fork lineage
 
@@ -118,5 +133,9 @@ This package is maintained as an active fork, not a one-off patch release.
 | Built-in memory storage | regression tests |
 | Custom `storage` | regression tests |
 | Stop lifecycle cleanup | regression tests |
+| Retry and polling cleanup | regression tests |
+| Cache namespace isolation | regression tests |
+| Async failure handling | regression tests |
 | Android manifest permission surface | regression tests |
-| Example native apps | CI smoke builds |
+| Android example app | clean emulator build and runtime log scan |
+| iOS example app | clean simulator build and runtime log scan |
