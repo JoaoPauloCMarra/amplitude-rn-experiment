@@ -1,7 +1,8 @@
 {
   "name": "amplitude-rn-experiment",
-  "version": "1.8.10",
+  "version": "1.8.11",
   "description": "Storage-agnostic React Native Experiment client for Amplitude services",
+  "packageManager": "bun@1.3.14",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",
@@ -24,12 +25,12 @@
     "generate:version": "genversion --es6 src/gen/version.ts",
     "typescript": "tsc -p tsconfig.build.json --noEmit",
     "lint": "eslint \"**/*.{ts,tsx}\"",
-    "pack:local": "node -e \"require('fs').mkdirSync('../.packed',{recursive:true})\" && npm pack --pack-destination ../.packed",
-    "prepare": "npm run generate:version && bob build",
+    "pack:local": "bun pm pack --destination ../.packed",
+    "prepare": "bun run generate:version && bun run bob build",
     "release": "release-it",
-    "example": "npm install --prefix example",
+    "example": "bun install --cwd example",
     "pods": "cd example && pod-install --quiet",
-    "bootstrap": "npm run example && npm run pods"
+    "bootstrap": "bun run example && bun run pods"
   },
   "keywords": [
     "react-native",
@@ -103,7 +104,7 @@
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "npm run lint && npm run typescript"
+      "pre-commit": "bun run lint && bun run typescript"
     }
   },
   "commitlint": {
