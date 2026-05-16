@@ -7,7 +7,7 @@
 5. Set workflow filename to `npm-publish.yml`.
 6. Leave environment empty unless GitHub environment protection is added to the workflow.
 7. Run the `Publish npm` workflow with `dryRun=true` before a real release.
-8. Run the `Release` workflow with `dryRun=false` to create the GitHub release.
-9. Confirm the release-triggered `Publish npm` workflow publishes the package.
+8. Run the `Release` workflow with `dryRun=false` to create the GitHub release and dispatch `Publish npm`.
+9. Confirm the dispatched `Publish npm` workflow publishes the package.
 
-Manual publish dispatch is available in `Publish npm` by setting `dryRun=false`, but the normal path is release-triggered publishing.
+Manual publish dispatch is available in `Publish npm` by setting `dryRun=false`, but the normal path is the release workflow dispatching the publish workflow for the new tag. Development, CI, and release verification use Bun; the publish workflow keeps npm only for the final trusted publishing registry command.

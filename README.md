@@ -23,7 +23,7 @@ Key improvements over the original package:
 ## Install
 
 ```sh
-npm install amplitude-rn-experiment
+bun add amplitude-rn-experiment
 ```
 
 ## Default storage behavior

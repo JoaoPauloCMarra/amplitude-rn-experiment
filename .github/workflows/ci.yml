@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+    - name: Setup Node
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+      with:
+        node-version: 24
+        package-manager-cache: false
+
+    - name: Setup Bun
+      run: npm install -g bun@1.3.14
+
+    - name: Install
+      run: bun install --frozen-lockfile
+
+    - name: TypeScript
+      run: bun run typescript
+
+    - name: Lint
+      run: bun run lint
+
+    - name: Test
+      run: bun run test
+
+    - name: Build package
+      run: bun run prepare
+      env:
+        CURRENT_ARCH: ${{ matrix.os == 'macos-latest' && 'arm64' || '' }}
+
+  android-example:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+    - name: Setup Node
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+      with:
+        node-version: 24
+        package-manager-cache: false
+
+    - name: Setup Bun
+      run: npm install -g bun@1.3.14
+
+    - name: Install root dependencies
+      run: bun install --frozen-lockfile
+
+    - name: Install example dependencies
+      run: bun install --cwd example --frozen-lockfile
+
+    - name: Build package
+      run: bun run prepare
+      env:
+        CURRENT_ARCH: arm64
+
+    - name: Build Android example
+      run: cd example/android && ./gradlew :app:assembleDebug
+
+  ios-example:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+    - name: Setup Node
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+      with:
+        node-version: 24
+        package-manager-cache: false
+
+    - name: Setup Bun
+      run: npm install -g bun@1.3.14
+
+    - name: Install root dependencies
+      run: bun install --frozen-lockfile
+
+    - name: Install example dependencies
+      run: bun install --cwd example --frozen-lockfile
+
+    - name: Build package
+      run: bun run prepare
+
+    - name: Install pods
+      run: cd example/ios && RCT_NEW_ARCH_ENABLED=1 pod install
+
+    - name: Build iOS example
+      run: |
+        xcodebuild \
+          -workspace example/ios/ExperimentReactNativeClientExample.xcworkspace \
+          -scheme ExperimentReactNativeClientExample \
+          -configuration Debug \
+          -sdk iphonesimulator \
+          -destination 'generic/platform=iOS Simulator' \
+          CODE_SIGNING_ALLOWED=NO \
+          build
