@@ -206,6 +206,10 @@ test('Experiment.initializeWithAmplitudeAnalytics removes identity listener on s
     ExperimentClient.prototype,
     'fetchOnIdentityChange',
   );
+  const fetchOrThrowSpy = jest.spyOn(
+    ExperimentClient.prototype,
+    'fetchOrThrow',
+  );
 
   const client = Experiment.initializeWithAmplitudeAnalytics(
     'client-maintenance-listener-cleanup',
@@ -221,6 +225,7 @@ test('Experiment.initializeWithAmplitudeAnalytics removes identity listener on s
 
   listener?.({});
   expect(fetchSpy).toHaveBeenCalledTimes(1);
+  expect(fetchOrThrowSpy).not.toHaveBeenCalled();
 
   client.stop();
 

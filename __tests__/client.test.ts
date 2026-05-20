@@ -7,6 +7,7 @@ import { ConnectorExposureTrackingProvider } from '../src/integration/connector'
 import { LocalStorage } from '../src/storage/local-storage';
 import { FetchOptions } from '../src/types/client';
 import { ExposureTrackingProvider } from '../src/types/exposure';
+import { LogLevel, type Logger } from '../src/types/logger';
 import { Source } from '../src/types/source';
 import { Storage } from '../src/types/storage';
 import { HttpClient, SimpleResponse } from '../src/types/transport';
@@ -50,6 +51,10 @@ beforeEach(async () => {
   await new LocalStorage().reset();
 });
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 class TestHttpClient implements HttpClient {
   public readonly status: number;
   public readonly body: string;
@@ -62,6 +67,14 @@ class TestHttpClient implements HttpClient {
   async request(): Promise<SimpleResponse> {
     return { status: this.status, body: this.body } as SimpleResponse;
   }
+}
+
+class TestLogger implements Logger {
+  error = jest.fn();
+  warn = jest.fn();
+  info = jest.fn();
+  debug = jest.fn();
+  verbose = jest.fn();
 }
 
 /**
@@ -86,6 +99,117 @@ test('ExperimentClient.fetch, no retries, timeout failure', async () => {
   await client.fetch(testUser);
   const variants = client.all();
   expect(variants).toEqual({});
+});
+
+test('ExperimentClient.fetch resolves and logs timeout failures', async () => {
+  const loggerProvider = new TestLogger();
+  const client = new ExperimentClient(API_KEY, {
+    logLevel: LogLevel.Warn,
+    loggerProvider,
+    retryFetchOnFailure: false,
+  });
+  const timeoutError = Error('Request timeout after 3500 milliseconds');
+  jest
+    .spyOn(ExperimentClient.prototype as any, 'doFetch')
+    .mockRejectedValue(timeoutError);
+
+  await expect(client.fetch(testUser)).resolves.toBe(client);
+
+  expect(loggerProvider.warn).toHaveBeenCalledWith(timeoutError);
+});
+
+test('ExperimentClient.fetchOrThrow rejects timeout failures', async () => {
+  const client = new ExperimentClient(API_KEY, {
+    retryFetchOnFailure: false,
+  });
+  jest
+    .spyOn(ExperimentClient.prototype as any, 'doFetch')
+    .mockRejectedValue(Error('Request timeout after 3500 milliseconds'));
+
+  await expect(client.fetchOrThrow(testUser)).rejects.toThrow(
+    'Request timeout after 3500 milliseconds',
+  );
+});
+
+test('ExperimentClient.fetchOrThrow stores variants on success', async () => {
+  const client = new ExperimentClient(API_KEY, {});
+  await client.cacheReady();
+  jest.spyOn(ExperimentClient.prototype as any, 'doFetch').mockResolvedValue({
+    [serverKey]: serverVariant,
+  });
+
+  await expect(client.fetchOrThrow(testUser)).resolves.toBe(client);
+
+  expect(client.variant(serverKey)).toMatchObject(serverVariant);
+});
+
+test('ExperimentClient.fetchOrThrow rejects empty API keys', async () => {
+  const client = new ExperimentClient('', {});
+
+  await expect(client.fetchOrThrow(testUser)).rejects.toThrow(
+    'Experiment API key is empty',
+  );
+});
+
+test('ExperimentClient.fetchOrThrow rejects HTTP failures', async () => {
+  const client = new ExperimentClient(API_KEY, {
+    retryFetchOnFailure: false,
+  });
+  jest
+    .spyOn(ExperimentClient.prototype as any, 'doFetch')
+    .mockRejectedValue(new FetchError(500, 'Fetch Exception 500'));
+
+  await expect(client.fetchOrThrow(testUser)).rejects.toThrow(
+    'Fetch Exception 500',
+  );
+});
+
+test('ExperimentClient.fetchOrThrow rejects network failures', async () => {
+  const client = new ExperimentClient(API_KEY, {
+    retryFetchOnFailure: false,
+  });
+  jest
+    .spyOn(ExperimentClient.prototype as any, 'doFetch')
+    .mockRejectedValue(Error('Network request failed'));
+
+  await expect(client.fetchOrThrow(testUser)).rejects.toThrow(
+    'Network request failed',
+  );
+});
+
+test('ExperimentClient.fetchOrThrow rejects storage failures', async () => {
+  const storage = {
+    get: async () => null,
+    put: async () => {
+      throw Error('storage failed');
+    },
+    delete: async () => undefined,
+  } as Storage;
+  const client = new ExperimentClient(API_KEY, { storage });
+  await client.cacheReady();
+  jest.spyOn(ExperimentClient.prototype as any, 'doFetch').mockResolvedValue({
+    [serverKey]: serverVariant,
+  });
+
+  await expect(client.fetchOrThrow(testUser)).rejects.toThrow('storage failed');
+});
+
+test('ExperimentClient.fetchOrThrow rejects immediate retryable failures and starts background retry', async () => {
+  const client = new ExperimentClient(API_KEY, {
+    retryFetchOnFailure: true,
+  });
+  jest
+    .spyOn(ExperimentClient.prototype as any, 'doFetch')
+    .mockRejectedValue(Error('Request timeout after 3500 milliseconds'));
+  const retryMock = jest
+    .spyOn(ExperimentClient.prototype as any, 'startRetries')
+    .mockImplementation(() => undefined);
+
+  await expect(client.fetchOrThrow(testUser)).rejects.toThrow(
+    'Request timeout after 3500 milliseconds',
+  );
+
+  expect(retryMock).toHaveBeenCalledTimes(1);
 });
 
 /**

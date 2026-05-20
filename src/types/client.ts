@@ -9,6 +9,7 @@ export interface Client {
   start(user?: ExperimentUser): Promise<void>;
   stop(): void;
   fetch(user?: ExperimentUser, options?: FetchOptions): Promise<Client>;
+  fetchOrThrow(user?: ExperimentUser, options?: FetchOptions): Promise<Client>;
   variant(key: string, fallback?: string | Variant): Variant;
   all(): Variants;
   clear(): void;

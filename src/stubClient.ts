@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars */
-import { Client } from './types/client';
+import { Client, FetchOptions } from './types/client';
 import { Defaults } from './types/config';
 import { ExperimentUser, ExperimentUserProvider } from './types/user';
 import { Variant, Variants } from './types/variant';
@@ -20,7 +20,17 @@ export class StubExperimentClient implements Client {
 
   public setUser(_user: ExperimentUser): void {}
 
-  public async fetch(_user: ExperimentUser): Promise<StubExperimentClient> {
+  public async fetch(
+    _user?: ExperimentUser,
+    _options?: FetchOptions,
+  ): Promise<StubExperimentClient> {
+    return this;
+  }
+
+  public async fetchOrThrow(
+    _user?: ExperimentUser,
+    _options?: FetchOptions,
+  ): Promise<StubExperimentClient> {
     return this;
   }
 

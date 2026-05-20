@@ -45,6 +45,14 @@ const client = Experiment.initialize(DEPLOYMENT_KEY);
 await client.fetch({ user_id: 'user-1' });
 ```
 
+Use `fetchOrThrow(user?, options?)` when app code needs to observe whether the
+current fetch completed successfully. It follows the same fetch path as
+`fetch()`, stores variants on success, and rejects on timeout, network, HTTP,
+empty API key, or storage failures. `fetch()` keeps its upstream-compatible
+behavior: it logs failures and resolves. If retry is enabled, `fetchOrThrow()`
+still rejects the immediate failed call after scheduling the same background
+retry work used by `fetch()`.
+
 ## Custom storage
 
 Pass a custom storage implementation to persist variants and flags:
@@ -111,7 +119,7 @@ Additional fork-only maintenance includes:
 ## Fork lineage
 
 - upstream base: `@amplitude/experiment-react-native-client@1.8.0`
-- fork package version: `amplitude-rn-experiment@1.8.10`
+- fork package version: `amplitude-rn-experiment@1.8.12`
 
 ## Maintenance policy
 

@@ -332,15 +332,20 @@ export class ExperimentClient implements Client {
     const fetchUser = user ?? this.user;
     this.setUser(fetchUser);
     try {
-      await this.fetchInternal(
-        fetchUser,
-        this.config.fetchTimeoutMillis,
-        this.config.retryFetchOnFailure,
-        options,
-      );
+      await this.fetchWithRetries(fetchUser, options);
     } catch (e) {
       this.logger.warn(e);
     }
+    return this;
+  }
+
+  public async fetchOrThrow(
+    user: ExperimentUser = this.user,
+    options?: FetchOptions,
+  ): Promise<ExperimentClient> {
+    const fetchUser = user ?? this.user;
+    this.setUser(fetchUser);
+    await this.fetchWithRetries(fetchUser, options);
     return this;
   }
 
@@ -775,6 +780,18 @@ export class ExperimentClient implements Client {
       }
       throw e;
     }
+  }
+
+  private async fetchWithRetries(
+    user: ExperimentUser,
+    options?: FetchOptions,
+  ): Promise<Variants> {
+    return await this.fetchInternal(
+      user,
+      this.config.fetchTimeoutMillis,
+      this.config.retryFetchOnFailure,
+      options,
+    );
   }
 
   private async doFetch(
