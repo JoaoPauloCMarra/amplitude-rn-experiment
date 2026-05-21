@@ -1,4 +1,16 @@
 {
-  "name": "ExperimentReactNativeClientExample",
-  "displayName": "ExperimentReactNativeClient Example"
+  "expo": {
+    "name": "ExperimentReactNativeClient Example",
+    "slug": "amplitude-rn-experiment-example",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.example.experimentreactnativeclient",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.example.experimentreactnativeclient"
+    }
+  }
 }

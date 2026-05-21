@@ -8,6 +8,7 @@ export * from './types/user';
 export * from './types/variant';
 export * from './types/exposure';
 export * from './types/storage';
-export { Logger, LogLevel } from './types/logger';
+export { LogLevel } from './types/logger';
+export type { Logger } from './types/logger';
 export { ConsoleLogger } from './logger/consoleLogger';
 export { LocalStorage, MemoryStorage } from './storage/local-storage';

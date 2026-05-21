@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => "13.4" }
+  s.platforms    = { :ios => "16.4" }
   s.source       = { :git => "https://github.com/JoaoPauloCMarra/amplitude-rn-experiment.git", :tag => "v#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
@@ -22,7 +22,6 @@ Pod::Spec.new do |s|
     s.compiler_flags = "-DRCT_NEW_ARCH_ENABLED=1"
 
     s.dependency "React-Codegen"
-    s.dependency "RCT-Folly"
     s.dependency "RCTRequired"
     s.dependency "RCTTypeSafety"
     s.dependency "ReactCommon/turbomodule/core"

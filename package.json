@@ -1,6 +1,6 @@
 {
   "name": "amplitude-rn-experiment",
-  "version": "1.8.12",
+  "version": "1.8.13",
   "description": "Storage-agnostic React Native Experiment client for Amplitude services",
   "packageManager": "bun@1.3.14",
   "main": "lib/commonjs/index",
@@ -60,7 +60,8 @@
     "@babel/core": "^7.29.0",
     "@commitlint/config-conventional": "^11.0.0",
     "@react-native-community/eslint-config": "^3.2.0",
-    "@react-native/babel-preset": "0.83.9",
+    "@react-native/babel-preset": "0.85.3",
+    "@react-native/jest-preset": "0.85.3",
     "@release-it/conventional-changelog": "^2.0.0",
     "@types/jest": "^29.5.14",
     "baseline-browser-mapping": "2.10.24",
@@ -76,22 +77,22 @@
     "jest-environment-jsdom": "^29.7.0",
     "pod-install": "^0.1.0",
     "prettier": "^2.8.8",
-    "react": "19.2.5",
-    "react-native": "0.83.9",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
     "react-native-builder-bob": "^0.41.0",
     "release-it": "^14.2.2",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "react": "*",
-    "react-native": "*"
+    "react": ">=18.2 <20",
+    "react-native": ">=0.74 <0.86"
   },
   "resolutions": {
     "baseline-browser-mapping": "2.10.24",
     "caniuse-lite": "1.0.30001791"
   },
   "jest": {
-    "preset": "react-native",
+    "preset": "@react-native/jest-preset",
     "testEnvironment": "jsdom",
     "modulePathIgnorePatterns": [
       "<rootDir>/example/node_modules",

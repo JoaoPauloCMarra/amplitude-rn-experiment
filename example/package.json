@@ -2,31 +2,52 @@
   "name": "amplitude-rn-experiment-example",
   "description": "Example app for amplitude-rn-experiment",
   "version": "0.0.1",
+  "main": "index.tsx",
   "private": true,
   "scripts": {
-    "android:oldarch": "react-native run-android",
-    "android": "react-native run-android --active-arch-only",
-    "ios:oldarch": "react-native run-ios",
-    "ios": "RCT_NEW_ARCH_ENABLED=1 react-native run-ios",
-    "pods:oldarch": "cd ios && pod install",
-    "pods": "cd ios && RCT_NEW_ARCH_ENABLED=1 pod install",
-    "start": "react-native start"
+    "android": "expo run:android",
+    "doctor": "expo-doctor",
+    "ios": "expo run:ios",
+    "pods": "cd ios && pod install",
+    "prebuild": "expo prebuild",
+    "start": "expo start",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@amplitude/analytics-react-native": "1.5.53",
-    "@react-native-async-storage/async-storage": "^1.17.11",
-    "amplitude-rn-experiment": "link:..",
-    "react": "18.2.0",
-    "react-native": "0.74.5"
+    "@amplitude/analytics-react-native": "1.5.54",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~56.0.3",
+    "expo-system-ui": "~56.0.5",
+    "react": "19.2.3",
+    "react-native": "0.85.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0",
+    "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.20.0",
     "@babel/runtime": "^7.20.0",
-    "@react-native/babel-preset": "0.74.87",
-    "@react-native/metro-config": "0.74.87",
-    "@react-native/typescript-config": "0.74.87",
+    "@react-native/babel-preset": "0.85.3",
+    "@react-native/metro-config": "0.85.3",
+    "@react-native/typescript-config": "0.85.3",
+    "@types/react": "~19.2.0",
     "babel-plugin-module-resolver": "^5.0.0",
-    "typescript": "^5.0.4"
+    "expo-doctor": "^1.19.7",
+    "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "@react-native-async-storage/async-storage": "2.2.0"
+  },
+  "expo": {
+    "autolinking": {
+      "exclude": [
+        "react",
+        "react-native"
+      ],
+      "legacy_shallowReactNativeLinking": true
+    },
+    "doctor": {
+      "appConfigFieldsNotSyncedCheck": {
+        "enabled": false
+      }
+    }
   }
 }

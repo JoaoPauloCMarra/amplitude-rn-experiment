@@ -26,6 +26,34 @@ Key improvements over the original package:
 bun add amplitude-rn-experiment
 ```
 
+## Compatibility
+
+This version is validated against Expo SDK 56 with React Native 0.85.3 and
+React 19.2.3. The package peer range supports React Native 0.74 through 0.85
+and React 18.2 through 19.x.
+
+The iOS package target is 16.4 or newer, matching the Expo SDK 56 native
+baseline.
+
+## Example app
+
+The example app is an Expo SDK 56 prebuild project.
+
+```sh
+cd example
+bun install
+bun run doctor -- --verbose
+bun run android
+bun run ios
+```
+
+Useful validation commands:
+
+```sh
+bun run typecheck
+bunx expo install --check
+```
+
 ## Default storage behavior
 
 If you initialize the client without a `storage` implementation, the SDK uses
@@ -119,7 +147,7 @@ Additional fork-only maintenance includes:
 ## Fork lineage
 
 - upstream base: `@amplitude/experiment-react-native-client@1.8.0`
-- fork package version: `amplitude-rn-experiment@1.8.12`
+- fork package version: `amplitude-rn-experiment@1.8.13`
 
 ## Maintenance policy
 
@@ -145,5 +173,6 @@ This package is maintained as an active fork, not a one-off patch release.
 | Cache namespace isolation | regression tests |
 | Async failure handling | regression tests |
 | Android manifest permission surface | regression tests |
-| Android example app | clean emulator build and runtime log scan |
-| iOS example app | clean simulator build and runtime log scan |
+| Expo SDK 56 dependency alignment | `expo install --check` and `expo-doctor` |
+| Android example app | clean debug build and runtime smoke test |
+| iOS example app | clean simulator build and runtime smoke test |

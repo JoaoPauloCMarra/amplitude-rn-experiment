@@ -66,13 +66,22 @@ jobs:
     - name: Install example dependencies
       run: bun install --cwd example --frozen-lockfile
 
+    - name: Check example dependencies
+      run: cd example && bunx expo install --check
+
+    - name: TypeScript example
+      run: cd example && bun run typecheck
+
+    - name: Doctor example
+      run: cd example && bun run doctor -- --verbose
+
     - name: Build package
       run: bun run prepare
       env:
         CURRENT_ARCH: arm64
 
     - name: Build Android example
-      run: cd example/android && ./gradlew :app:assembleDebug
+      run: cd example/android && NODE_ENV=development ./gradlew :app:assembleDebug -x lint -x test
 
   ios-example:
     runs-on: macos-latest
@@ -95,11 +104,20 @@ jobs:
     - name: Install example dependencies
       run: bun install --cwd example --frozen-lockfile
 
+    - name: Check example dependencies
+      run: cd example && bunx expo install --check
+
+    - name: TypeScript example
+      run: cd example && bun run typecheck
+
+    - name: Doctor example
+      run: cd example && bun run doctor -- --verbose
+
     - name: Build package
       run: bun run prepare
 
     - name: Install pods
-      run: cd example/ios && RCT_NEW_ARCH_ENABLED=1 pod install
+      run: cd example/ios && pod install
 
     - name: Build iOS example
       run: |

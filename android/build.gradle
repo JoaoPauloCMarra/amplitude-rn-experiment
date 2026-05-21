@@ -27,10 +27,10 @@ def supportsNamespace() {
 }
 
 android {
-    compileSdk safeExtGet('compileSdkVersion', 36)
+    compileSdk = safeExtGet('compileSdkVersion', 36)
 
     if (supportsNamespace()) {
-        namespace "com.amplitude.experiment.reactnative"
+        namespace = "com.amplitude.experiment.reactnative"
 
         sourceSets {
             main {
@@ -40,17 +40,17 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion safeExtGet('minSdkVersion', 24)
-        targetSdkVersion safeExtGet('targetSdkVersion', 36)
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion = safeExtGet('minSdkVersion', 24)
+        targetSdkVersion = safeExtGet('targetSdkVersion', 36)
+        versionCode = 1
+        versionName = "1.0"
 
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
         }
     }
 
@@ -82,7 +82,7 @@ repositories {
     mavenLocal()
     maven {
         // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-        url("$rootDir/../node_modules/react-native/android")
+        url = uri("$rootDir/../node_modules/react-native/android")
     }
     google()
     mavenCentral()
